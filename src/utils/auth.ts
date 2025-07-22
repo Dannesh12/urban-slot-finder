@@ -1,6 +1,6 @@
 import { User, AuthState } from '@/types';
 
-const AUTH_STORAGE_KEY = 'parking_auth';
+const AUTH_STORAGE_KEY = 'earning_auth';
 
 export const authStorage = {
   get(): AuthState {
@@ -33,19 +33,39 @@ export const authStorage = {
   }
 };
 
+const generateReferralCode = (): string => {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+};
+
 export const mockUsers: User[] = [
   {
     id: '1',
-    email: 'admin@parking.com',
+    email: 'admin@earnke.com',
     name: 'Admin User',
+    phone: '+254700000000',
     role: 'admin',
+    isActivated: true,
+    walletBalance: 50000,
+    adsWatched: 0,
+    referralCode: generateReferralCode(),
+    hasSpun: false,
+    totalEarnings: 50000,
+    totalReferrals: 0,
     createdAt: new Date().toISOString()
   },
   {
     id: '2',
-    email: 'user@parking.com',
-    name: 'Regular User',
+    email: 'user@earnke.com',
+    name: 'Demo User',
+    phone: '+254700000001',
     role: 'user',
+    isActivated: false,
+    walletBalance: 0,
+    adsWatched: 0,
+    referralCode: generateReferralCode(),
+    hasSpun: false,
+    totalEarnings: 0,
+    totalReferrals: 0,
     createdAt: new Date().toISOString()
   }
 ];

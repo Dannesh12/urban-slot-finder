@@ -1,217 +1,142 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { bookingStorage, slotStorage } from '@/utils/mockData';
-import { 
-  Calendar, 
-  MapPin, 
-  Clock, 
-  DollarSign, 
-  Car,
-  Plus,
-  History,
-  Map as MapIcon
-} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Wallet, Play, Users, Gift, AlertCircle, CheckCircle } from 'lucide-react';
+import { adStorage, adViewStorage } from '@/utils/mockData';
+import type { Ad, AdView } from '@/types';
 
-export const UserDashboard: React.FC = () => {
+const UserDashboard = () => {
   const { user } = useAuth();
-  const bookings = bookingStorage.getAll().filter(b => b.userId === user?.id);
-  const activeBookings = bookings.filter(b => b.status === 'confirmed' || b.status === 'pending');
-  const slots = slotStorage.getAll();
-  
-  const totalSpent = bookings
-    .filter(b => b.paymentStatus === 'success')
-    .reduce((sum, b) => sum + b.totalCost, 0);
+  const [ads, setAds] = useState<Ad[]>([]);
+  const [userAdViews, setUserAdViews] = useState<AdView[]>([]);
 
-  const upcomingBooking = activeBookings
-    .filter(b => new Date(b.startTime) > new Date())
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+  useEffect(() => {
+    setAds(adStorage.getAll());
+    const allViews = adViewStorage.getAll();
+    setUserAdViews(allViews.filter(view => view.userId === user?.id));
+  }, [user?.id]);
+
+  const handleWatchAd = (adId: string) => {
+    if (!user?.isActivated) return;
+
+    const ad = ads.find(a => a.id === adId);
+    if (ad) {
+      const newView = adViewStorage.add({
+        userId: user.id,
+        adId: adId,
+        earnedAmount: ad.reward,
+        watchedAt: new Date().toISOString(),
+        duration: ad.duration
+      });
+      
+      setUserAdViews(prev => [...prev, newView]);
+    }
+  };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Welcome Header */}
-      <div className="bg-gradient-hero rounded-xl p-6 text-primary-foreground shadow-glow">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.name}!</h1>
-        <p className="text-primary-foreground/80">
-          Find and book parking slots in seconds. Your next spot is just a click away.
-        </p>
-      </div>
+    <div className="space-y-6 p-6">
+      <Card className="bg-gradient-primary text-white border-0">
+        <CardContent className="p-6">
+          <h1 className="text-2xl font-bold mb-2">🎉 Welcome to EarnKE!</h1>
+          <p className="text-white/90">Turn your time into money by watching ads, referring friends, and spinning for bonuses.</p>
+        </CardContent>
+      </Card>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Button variant="gradient" size="lg" className="h-20 flex flex-col space-y-2">
-          <MapIcon className="w-6 h-6" />
-          <span>Find Parking</span>
-        </Button>
-        <Button variant="outline" size="lg" className="h-20 flex flex-col space-y-2">
-          <Plus className="w-6 h-6" />
-          <span>Quick Book</span>
-        </Button>
-        <Button variant="outline" size="lg" className="h-20 flex flex-col space-y-2">
-          <History className="w-6 h-6" />
-          <span>View History</span>
-        </Button>
-      </div>
+      {!user?.isActivated && (
+        <Alert className="border-accent bg-accent/10">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            🚀 <strong>Activate your account with KES 100</strong> to unlock ad watching and start earning instantly!
+          </AlertDescription>
+          <Button className="mt-3" size="sm">Activate Account</Button>
+        </Alert>
+      )}
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="shadow-soft">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-success-light rounded-lg">
-                <Calendar className="w-5 h-5 text-success" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{activeBookings.length}</p>
-                <p className="text-sm text-muted-foreground">Active Bookings</p>
-              </div>
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">KES {user?.walletBalance?.toLocaleString() || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <History className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{bookings.length}</p>
-                <p className="text-sm text-muted-foreground">Total Bookings</p>
-              </div>
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ads Watched</CardTitle>
+            <Play className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{user?.adsWatched || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-warning-light rounded-lg">
-                <DollarSign className="w-5 h-5 text-warning" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">${totalSpent}</p>
-                <p className="text-sm text-muted-foreground">Total Spent</p>
-              </div>
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Referrals</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{user?.totalReferrals || 0}</div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-success-light rounded-lg">
-                <Car className="w-5 h-5 text-success" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{slots.filter(s => s.currentOccupancy < s.capacity).length}</p>
-                <p className="text-sm text-muted-foreground">Available Slots</p>
-              </div>
-            </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Status</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <Badge variant={user?.isActivated ? "default" : "secondary"}>
+              {user?.isActivated ? "Activated" : "Not Activated"}
+            </Badge>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Booking */}
-        <Card className="shadow-medium">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="w-5 h-5" />
-              <span>Next Booking</span>
-            </CardTitle>
-            <CardDescription>Your upcoming parking reservation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {upcomingBooking ? (
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <p className="font-medium">
-                      {slots.find(s => s.id === upcomingBooking.slotId)?.name}
-                    </p>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span>{slots.find(s => s.id === upcomingBooking.slotId)?.location.address}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(upcomingBooking.startTime).toLocaleDateString()}</span>
-                      <span>{new Date(upcomingBooking.startTime).toLocaleTimeString()}</span>
-                    </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Play className="h-5 w-5" />
+            📺 Watch & Earn
+          </CardTitle>
+          <CardDescription>Watch short ads and earn KES 10 per view. It's that simple!</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {ads.map((ad) => (
+              <Card key={ad.id} className="border-2 hover:border-primary/50 transition-colors">
+                <CardHeader className="pb-3">
+                  <img src={ad.imageUrl} alt={ad.title} className="w-full h-32 object-cover rounded-md mb-2" />
+                  <CardTitle className="text-sm">{ad.title}</CardTitle>
+                  <CardDescription className="text-xs">{ad.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex items-center justify-between mb-3">
+                    <Badge className="bg-primary-glow text-primary">KES {ad.reward}</Badge>
+                    <span className="text-xs text-muted-foreground">{ad.duration}s</span>
                   </div>
-                  <Badge variant={upcomingBooking.status === 'confirmed' ? 'default' : 'secondary'}>
-                    {upcomingBooking.status}
-                  </Badge>
-                </div>
-                <div className="pt-4 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span>Duration:</span>
-                    <span>{upcomingBooking.duration} hours</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-medium mt-1">
-                    <span>Total Cost:</span>
-                    <span>${upcomingBooking.totalCost}</span>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No upcoming bookings</p>
-                <Button variant="outline" size="sm" className="mt-4">
-                  Book a slot
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="shadow-medium">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <History className="w-5 h-5" />
-              <span>Recent Activity</span>
-            </CardTitle>
-            <CardDescription>Your latest parking activity</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {bookings.slice(0, 3).map((booking) => {
-                const slot = slots.find(s => s.id === booking.slotId);
-                return (
-                  <div key={booking.id} className="flex items-center justify-between py-2">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{slot?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(booking.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right space-y-1">
-                      <Badge 
-                        variant={booking.status === 'completed' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {booking.status}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground">${booking.totalCost}</p>
-                    </div>
-                  </div>
-                );
-              })}
-              {bookings.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <History className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No booking history yet</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  <Button 
+                    onClick={() => handleWatchAd(ad.id)}
+                    className="w-full"
+                    disabled={!user?.isActivated}
+                  >
+                    {user?.isActivated ? 'Watch Ad' : 'Activate to Watch'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
+export default UserDashboard;

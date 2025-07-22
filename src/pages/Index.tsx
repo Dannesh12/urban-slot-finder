@@ -16,7 +16,7 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <div className="animate-pulse-glow w-16 h-16 bg-gradient-primary rounded-full mx-auto"></div>
-          <p className="text-muted-foreground">Loading ParkEase...</p>
+          <p className="text-muted-foreground">Loading EarnKE...</p>
         </div>
       </div>
     );
@@ -35,7 +35,7 @@ const Index = () => {
       <Header />
       <div className="flex">
         <Navigation />
-        <main className="flex-1 p-6">
+        <main className="flex-1">
           {user?.role === 'admin' ? <AdminDashboard /> : <UserDashboard />}
         </main>
       </div>

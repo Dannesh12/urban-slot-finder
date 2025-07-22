@@ -112,11 +112,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
       // In a real app, this would call an API to register the user
+      const referralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const newUser: User = {
         id: Date.now().toString(),
         email,
         name,
+        phone: '+254700000000', // Default phone
         role,
+        isActivated: false,
+        walletBalance: 0,
+        adsWatched: 0,
+        referralCode,
+        hasSpun: false,
+        totalEarnings: 0,
+        totalReferrals: 0,
         createdAt: new Date().toISOString()
       };
       

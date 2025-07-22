@@ -2,37 +2,16 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  phone: string;
   role: 'admin' | 'user';
-  createdAt: string;
-}
-
-export interface ParkingSlot {
-  id: string;
-  name: string;
-  location: {
-    address: string;
-    lat: number;
-    lng: number;
-  };
-  capacity: number;
-  currentOccupancy: number;
-  hourlyRate: number;
-  adminId: string;
-  amenities: string[];
-  isActive: boolean;
-  createdAt: string;
-}
-
-export interface Booking {
-  id: string;
-  userId: string;
-  slotId: string;
-  startTime: string;
-  endTime: string;
-  duration: number; // in hours
-  totalCost: number;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-  paymentStatus: 'pending' | 'success' | 'failed';
+  isActivated: boolean;
+  walletBalance: number;
+  adsWatched: number;
+  referralCode: string;
+  referredBy?: string;
+  hasSpun: boolean;
+  totalEarnings: number;
+  totalReferrals: number;
   createdAt: string;
 }
 
@@ -42,9 +21,60 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-export interface SlotFilter {
-  location?: string;
-  maxPrice?: number;
-  availableOnly?: boolean;
-  amenities?: string[];
+export interface Ad {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  videoUrl?: string;
+  duration: number; // in seconds
+  reward: number; // KES amount
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface AdView {
+  id: string;
+  userId: string;
+  adId: string;
+  earnedAmount: number;
+  watchedAt: string;
+  duration: number;
+}
+
+export interface Referral {
+  id: string;
+  referrerId: string;
+  referredUserId: string;
+  referredEmail: string;
+  isActivated: boolean;
+  earnedAmount: number;
+  createdAt: string;
+}
+
+export interface WithdrawalRequest {
+  id: string;
+  userId: string;
+  amount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: string;
+  processedAt?: string;
+  paymentMethod: string;
+  accountDetails: string;
+}
+
+export interface SpinResult {
+  id: string;
+  userId: string;
+  amount: number;
+  spunAt: string;
+}
+
+export interface ActivationPayment {
+  id: string;
+  userId: string;
+  amount: number;
+  method: string;
+  status: 'pending' | 'completed' | 'failed';
+  createdAt: string;
 }

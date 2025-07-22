@@ -1,179 +1,138 @@
-import { ParkingSlot, Booking } from '@/types';
+import { Ad, AdView, Referral, WithdrawalRequest, SpinResult } from '@/types';
 
-export const mockParkingSlots: ParkingSlot[] = [
+export const mockAds: Ad[] = [
   {
     id: '1',
-    name: 'Downtown Central Parking',
-    location: {
-      address: '123 Main St, Downtown',
-      lat: 40.7128,
-      lng: -74.0060
-    },
-    capacity: 50,
-    currentOccupancy: 35,
-    hourlyRate: 15,
-    adminId: '1',
-    amenities: ['CCTV', 'Covered', '24/7 Security'],
+    title: 'Safaricom Data Bundles',
+    description: 'Get the best data deals from Kenya\'s leading network',
+    imageUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop',
+    duration: 30,
+    reward: 10,
     isActive: true,
     createdAt: new Date().toISOString()
   },
   {
     id: '2',
-    name: 'Airport Express Lot',
-    location: {
-      address: '456 Airport Rd, Terminal 1',
-      lat: 40.6892,
-      lng: -74.1745
-    },
-    capacity: 200,
-    currentOccupancy: 120,
-    hourlyRate: 8,
-    adminId: '1',
-    amenities: ['Shuttle Service', 'Covered', 'Electric Charging'],
+    title: 'KCB Bank Services',
+    description: 'Open your account today and enjoy great banking benefits',
+    imageUrl: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&h=300&fit=crop',
+    duration: 45,
+    reward: 10,
     isActive: true,
     createdAt: new Date().toISOString()
   },
   {
     id: '3',
-    name: 'Mall Plaza Parking',
-    location: {
-      address: '789 Shopping Blvd, Mall District',
-      lat: 40.7589,
-      lng: -73.9851
-    },
-    capacity: 100,
-    currentOccupancy: 45,
-    hourlyRate: 12,
-    adminId: '1',
-    amenities: ['Covered', 'Valet Service', 'Car Wash'],
-    isActive: true,
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: '4',
-    name: 'Business District Garage',
-    location: {
-      address: '321 Corporate Ave, Business Center',
-      lat: 40.7614,
-      lng: -73.9776
-    },
-    capacity: 75,
-    currentOccupancy: 75,
-    hourlyRate: 20,
-    adminId: '1',
-    amenities: ['CCTV', 'Covered', 'Reserved Spots'],
+    title: 'Jumia Flash Sale',
+    description: 'Massive discounts on electronics and fashion',
+    imageUrl: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&h=300&fit=crop',
+    duration: 35,
+    reward: 10,
     isActive: true,
     createdAt: new Date().toISOString()
   }
 ];
 
-export const mockBookings: Booking[] = [
+export const mockAdViews: AdView[] = [
   {
     id: '1',
     userId: '2',
-    slotId: '1',
-    startTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-    endTime: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(), // 5 hours from now
-    duration: 3,
-    totalCost: 45,
-    status: 'confirmed',
-    paymentStatus: 'success',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: '2',
-    userId: '2',
-    slotId: '2',
-    startTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    endTime: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(), // 20 hours ago
-    duration: 4,
-    totalCost: 32,
-    status: 'completed',
-    paymentStatus: 'success',
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    adId: '1',
+    earnedAmount: 10,
+    watchedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    duration: 30
   }
 ];
 
-export const slotStorage = {
-  getAll(): ParkingSlot[] {
+export const adStorage = {
+  getAll(): Ad[] {
     try {
-      const stored = localStorage.getItem('parking_slots');
-      return stored ? JSON.parse(stored) : mockParkingSlots;
+      const stored = localStorage.getItem('earn_ads');
+      return stored ? JSON.parse(stored) : mockAds;
     } catch {
-      return mockParkingSlots;
+      return mockAds;
     }
   },
 
-  save(slots: ParkingSlot[]): void {
-    localStorage.setItem('parking_slots', JSON.stringify(slots));
-  },
-
-  add(slot: Omit<ParkingSlot, 'id' | 'createdAt'>): ParkingSlot {
-    const slots = this.getAll();
-    const newSlot: ParkingSlot = {
-      ...slot,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    slots.push(newSlot);
-    this.save(slots);
-    return newSlot;
-  },
-
-  update(id: string, updates: Partial<ParkingSlot>): ParkingSlot | null {
-    const slots = this.getAll();
-    const index = slots.findIndex(s => s.id === id);
-    if (index === -1) return null;
-    
-    slots[index] = { ...slots[index], ...updates };
-    this.save(slots);
-    return slots[index];
-  },
-
-  delete(id: string): boolean {
-    const slots = this.getAll();
-    const filtered = slots.filter(s => s.id !== id);
-    if (filtered.length === slots.length) return false;
-    
-    this.save(filtered);
-    return true;
+  save(ads: Ad[]): void {
+    localStorage.setItem('earn_ads', JSON.stringify(ads));
   }
 };
 
-export const bookingStorage = {
-  getAll(): Booking[] {
+export const adViewStorage = {
+  getAll(): AdView[] {
     try {
-      const stored = localStorage.getItem('parking_bookings');
-      return stored ? JSON.parse(stored) : mockBookings;
+      const stored = localStorage.getItem('earn_ad_views');
+      return stored ? JSON.parse(stored) : mockAdViews;
     } catch {
-      return mockBookings;
+      return mockAdViews;
     }
   },
 
-  save(bookings: Booking[]): void {
-    localStorage.setItem('parking_bookings', JSON.stringify(bookings));
+  save(views: AdView[]): void {
+    localStorage.setItem('earn_ad_views', JSON.stringify(views));
   },
 
-  add(booking: Omit<Booking, 'id' | 'createdAt'>): Booking {
-    const bookings = this.getAll();
-    const newBooking: Booking = {
-      ...booking,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
+  add(view: Omit<AdView, 'id'>): AdView {
+    const views = this.getAll();
+    const newView: AdView = {
+      ...view,
+      id: Date.now().toString()
     };
-    bookings.push(newBooking);
-    this.save(bookings);
-    return newBooking;
+    views.push(newView);
+    this.save(views);
+    return newView;
+  }
+};
+
+export const referralStorage = {
+  getAll(): Referral[] {
+    try {
+      const stored = localStorage.getItem('earn_referrals');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
   },
 
-  updateStatus(id: string, status: Booking['status'], paymentStatus?: Booking['paymentStatus']): boolean {
-    const bookings = this.getAll();
-    const index = bookings.findIndex(b => b.id === id);
-    if (index === -1) return false;
-    
-    bookings[index].status = status;
-    if (paymentStatus) bookings[index].paymentStatus = paymentStatus;
-    this.save(bookings);
-    return true;
+  save(referrals: Referral[]): void {
+    localStorage.setItem('earn_referrals', JSON.stringify(referrals));
+  },
+
+  add(referral: Omit<Referral, 'id'>): Referral {
+    const referrals = this.getAll();
+    const newReferral: Referral = {
+      ...referral,
+      id: Date.now().toString()
+    };
+    referrals.push(newReferral);
+    this.save(referrals);
+    return newReferral;
+  }
+};
+
+export const withdrawalStorage = {
+  getAll(): WithdrawalRequest[] {
+    try {
+      const stored = localStorage.getItem('earn_withdrawals');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  save(withdrawals: WithdrawalRequest[]): void {
+    localStorage.setItem('earn_withdrawals', JSON.stringify(withdrawals));
+  },
+
+  add(withdrawal: Omit<WithdrawalRequest, 'id'>): WithdrawalRequest {
+    const withdrawals = this.getAll();
+    const newWithdrawal: WithdrawalRequest = {
+      ...withdrawal,
+      id: Date.now().toString()
+    };
+    withdrawals.push(newWithdrawal);
+    this.save(withdrawals);
+    return newWithdrawal;
   }
 };
