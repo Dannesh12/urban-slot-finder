@@ -4,8 +4,8 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 import { Header } from '@/components/layout/Header';
 import { Navigation } from '@/components/layout/Navigation';
-import { UserDashboard } from '@/components/dashboard/UserDashboard';
-import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
+import UserDashboard from '@/components/dashboard/UserDashboard';
+import AdminDashboard from '@/components/dashboard/AdminDashboard';
 
 const Index = () => {
   const { isAuthenticated, user, isLoading } = useAuth();
